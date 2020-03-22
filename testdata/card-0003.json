@@ -1,0 +1,11 @@
+{
+  "id":  3,
+  "name": "hij",
+  "type": 3,
+  "values": {
+    "velocity": 51,
+    "attack": 45,
+    "defense": 31,
+    "power": 25
+  }
+}

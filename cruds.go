@@ -2,7 +2,7 @@ package main
 
 import (
 	opentracing "github.com/opentracing/opentracing-go"
-	"github.com/rotscher/cruds/internal/cruds"
+	"github.com/rotscher/cruds/internal/cards"
 	"github.com/rotscher/cruds/internal/route"
 	"github.com/uber/jaeger-lib/metrics"
 	"io"
@@ -14,29 +14,13 @@ import (
 	jaegerlog "github.com/uber/jaeger-client-go/log"
 )
 
-/*
-card := Card{
-		Id:              1,
-		Name:            "foobar",
-		CardType:        0,
-		CharacterValues: CharacterValues{
-			Velocity: 1,
-			Attack:   2,
-			Defense:  3,
-			Power:    4,
-		},
-	}
-	return card
- */
-
-
 func main() {
 	handler := &route.RegexpHandler{}
 
 	//https://stackoverflow.com/questions/6564558/wildcards-in-the-pattern-for-http-handlefunc
-	handler.HandleFunc("/cruds", cruds.GetAll).Methods("GET")
-	handler.HandleFunc("/cruds/{cardId}", cruds.GetById).Methods("GET")
-	handler.HandleFunc("/cruds", cruds.Insert).Methods("POST")
+	handler.HandleFunc("/cards", cards.GetAll).Methods("GET")
+	handler.HandleFunc("/cards/{cardId}", cards.GetById).Methods("GET")
+	handler.HandleFunc("/cards", cards.Insert).Methods("POST")
 
 	closer := initTracer()
 	defer closer.Close()
@@ -48,11 +32,11 @@ func initTracer() io.Closer {
 	// and enable LogSpan to log every span via configured Logger.
 	cfg := jaegercfg.Configuration{
 		ServiceName: "cruds",
-		Sampler:     &jaegercfg.SamplerConfig{
+		Sampler: &jaegercfg.SamplerConfig{
 			Type:  jaeger.SamplerTypeConst,
-			Param: 1,
+			Param: 0,
 		},
-		Reporter:    &jaegercfg.ReporterConfig{
+		Reporter: &jaegercfg.ReporterConfig{
 			LogSpans: true,
 		},
 	}
@@ -73,4 +57,3 @@ func initTracer() io.Closer {
 	return closer
 	// continue main()
 }
-

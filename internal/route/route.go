@@ -35,7 +35,20 @@ func Vars(r *http.Request) map[string]string {
 	return nil
 }
 
-func (route *route) Methods(methods... string) *route {
+func (route *route) matchRoute(r *http.Request) bool {
+
+	if route.regexData.pattern.MatchString(r.URL.Path) {
+		for _, method := range route.methods {
+			if r.Method == method {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func (route *route) Methods(methods ...string) *route {
 	for _, m := range methods {
 		route.methods = append(route.methods, m)
 	}
@@ -90,26 +103,21 @@ func (h *RegexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		span = tracer.StartSpan(r.URL.Path)
 	}
 
-	route := matchRoute(h, r)
+	var matchingRoute *route
+	for _, route := range h.routes {
+		if route.matchRoute(r) {
+			matchingRoute = route
+		}
+	}
 
-	if route != nil {
-		r = route.withPathParams(r)
-		route.handler.ServeHTTP(w, r)
+	if matchingRoute != nil {
+		r = matchingRoute.withPathParams(r)
+		matchingRoute.handler.ServeHTTP(w, r)
 	} else {
 		// no pattern matched; send 404 response
 		http.NotFound(w, r)
 	}
 	span.Finish()
-}
-
-func matchRoute(h *RegexpHandler, r *http.Request) *route {
-	for _, route := range h.routes {
-		if route.regexData.pattern.MatchString(r.URL.Path) {
-			return route
-		}
-	}
-
-	return nil
 }
 
 func UrlRegexConverter(urlPattern string) (regexData, error) {

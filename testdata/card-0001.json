@@ -1,0 +1,11 @@
+{
+  "id":  1,
+  "name": "abc",
+  "type": 2,
+  "values": {
+    "velocity": 1,
+    "attack": 2,
+    "defense": 3,
+    "power": 4
+  }
+}
